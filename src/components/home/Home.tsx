@@ -102,7 +102,7 @@ const Home: React.FC = () => {
 
       if (emailsToBlock.includes(userEmail)) {
         const response = await fetch(
-          `${API_URL}/block`,
+          `${API_URL}/users/block`,
           {
             method: 'POST',
             headers: {
@@ -130,7 +130,7 @@ const Home: React.FC = () => {
         navigate('/login');
       } else {
         const response = await fetch(
-          `${API_URL}/block`,
+          `${API_URL}/users/block`,
           {
             method: 'POST',
             headers: {
@@ -164,7 +164,7 @@ const Home: React.FC = () => {
   const handleUnblockUsers = async () => {
     try {
       const response = await fetch(
-        `${API_URL}/unblock`,
+        `${API_URL}/users/unblock`,
         {
           method: 'POST',
           headers: {
@@ -201,7 +201,7 @@ const Home: React.FC = () => {
 
     try {
       const response = await fetch(
-        `${API_URL}/delete`,
+        `${API_URL}/users/delete`,
         {
           method: 'POST',
           headers: {
