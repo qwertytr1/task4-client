@@ -1,7 +1,9 @@
 import { User } from './interfaces';
+import dotenv from "dotenv";
 
+dotenv.config();
 // utils/fetchUsers.ts
-
+const API_URL = process.env.REACT_APP_API_BASE_URL;
 const fetchUsersData = async (userToken: string) => {
   if (!userToken) {
     throw new Error('User token is required');
@@ -9,7 +11,7 @@ const fetchUsersData = async (userToken: string) => {
 
   try {
     const response = await fetch(
-      'https://task4-server-6clx.vercel.app/users',
+      `${API_URL}/users`,
       {
         headers: {
           Authorization: `Bearer ${userToken}`,

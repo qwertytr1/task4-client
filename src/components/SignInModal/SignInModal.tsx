@@ -5,12 +5,15 @@ import { motion } from 'framer-motion';
 import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../AuthProvider/AuthProvider';
+import dotenv from "dotenv";
+
+dotenv.config();
 
 function SignInModal() {
   const location = useLocation();
   const navigate = useNavigate();
   const { login } = useAuth();
-
+  const API_URL = process.env.REACT_APP_API_BASE_URL;
   const [values, setValues] = useState({
     email: location.state?.email || '',
     password: location.state?.password || '',
@@ -24,7 +27,7 @@ function SignInModal() {
 
       axios
         .post(
-          'https://task4-server-6clx.vercel.app/login',
+          `${API_URL}/login`,
           values,
         )
         .then((res) => {

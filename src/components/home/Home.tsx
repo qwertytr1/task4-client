@@ -4,6 +4,9 @@ import fetchUsersData from '../../utils/fetchUsers';
 import { User } from '../../utils/interfaces';
 import { useAuth } from '../AuthProvider/AuthProvider';
 import './index.css';
+import dotenv from "dotenv";
+
+dotenv.config();
 
 const Home: React.FC = () => {
   const [users, setUsers] = useState<User[]>([]);
@@ -14,6 +17,7 @@ const Home: React.FC = () => {
   const { logout } = useAuth();
   const [userToken, setUserToken] = useState<string | null>(null);
   const [dataUser, setDataUser] = useState<User | null>(null);
+  const API_URL = process.env.REACT_APP_API_BASE_URL;
 
   useEffect(() => {
     const token = localStorage.getItem('authToken');
@@ -101,7 +105,7 @@ const Home: React.FC = () => {
 
       if (emailsToBlock.includes(userEmail)) {
         const response = await fetch(
-          'https://task4-server-6clx.vercel.app/block',
+          `${API_URL}/block`,
           {
             method: 'POST',
             headers: {
@@ -129,7 +133,7 @@ const Home: React.FC = () => {
         navigate('/login');
       } else {
         const response = await fetch(
-          'https://task4-server-6clx.vercel.app/block',
+          `${API_URL}/block`,
           {
             method: 'POST',
             headers: {
@@ -163,7 +167,7 @@ const Home: React.FC = () => {
   const handleUnblockUsers = async () => {
     try {
       const response = await fetch(
-        'https://task4-server-6clx.vercel.app/unblock',
+        `${API_URL}/unblock`,
         {
           method: 'POST',
           headers: {
@@ -200,7 +204,7 @@ const Home: React.FC = () => {
 
     try {
       const response = await fetch(
-        'https://task4-server-6clx.vercel.app/delete',
+        `${API_URL}/delete`,
         {
           method: 'POST',
           headers: {
