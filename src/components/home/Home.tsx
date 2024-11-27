@@ -69,8 +69,11 @@ const Home: React.FC = () => {
       const allIds = users.map((u) => u.id);
       setSelectedIds(allIds);
     }
+    console.log("Users data:", users);
     setSelectAll(!selectAll);
+    console.log("Selected IDs after select all:", selectedIds);
   }, [selectAll, users]);
+
   useEffect(() => {
     console.log("Users data:", users);
   }, [users]);
