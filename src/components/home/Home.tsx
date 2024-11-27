@@ -52,10 +52,9 @@ const Home: React.FC = () => {
   }, [userToken]);
 
   useEffect(() => {
-    if (userToken) {
-      fetchUsers();
-    }
-  }, [fetchUsers, userToken]);
+    if (!userToken) return;
+    fetchUsers();
+  }, [userToken]);
 
   const handleLogout = useCallback(() => {
     logout();
