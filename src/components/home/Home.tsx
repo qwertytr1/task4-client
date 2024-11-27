@@ -96,40 +96,69 @@ const Home: React.FC = () => {
     [selectedIds, users],
   );
   const handleBlockUsers = useCallback(async () => {
-    if (selectedUsersData.length === 0) {
-      alert("No users selected.");
+    const userEmail = dataUser?.email;
+
+    if (!userEmail) {
       return;
     }
 
     try {
       const emailsToBlock = selectedUsersData.map((user) => user.email);
 
-      if (!emailsToBlock.length) {
-        throw new Error("No valid emails to block.");
+      if (emailsToBlock.includes(userEmail)) {
+        const response = await fetch(`${API_URL}/users/block`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${userToken}`,
+          },
+          body: JSON.stringify({ emails: emailsToBlock }),
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to block users');
+        }
+
+        const result = await response.json();
+        alert(result.message);
+        setUsers((prevUsers) =>
+          prevUsers.map((user) =>
+            emailsToBlock.includes(user.email)
+              ? { ...user, status: 'blocked' }
+              : user,
+          ),
+        );
+
+        navigate('/login');
+      } else {
+        const response = await fetch(`${API_URL}/users/block`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${userToken}`,
+          },
+          body: JSON.stringify({ emails: emailsToBlock }),
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to block users');
+        }
+
+        const result = await response.json();
+        alert(result.message);
+
+        setUsers((prevUsers) =>
+          prevUsers.map((user) =>
+            emailsToBlock.includes(user.email)
+              ? { ...user, status: 'blocked' }
+              : user,
+          ),
+        );
       }
-
-      const response = await fetch(`${API_URL}/users/block`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${userToken}`,
-        },
-        body: JSON.stringify({ emails: emailsToBlock }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to block users");
-      }
-
-      const result = await response.json();
-      alert(result.message);
-      // Обновление пользователей
-      fetchUsers();
     } catch (error) {
-      console.error("Error while blocking users:", error);
-      alert("Failed to block users.");
+      console.error('Error while blocking users:', error);
     }
-  }, [selectedUsersData, userToken]);
+  }, [selectedUsersData, navigate, dataUser, userToken]);
   const handleUnblockUsers = async () => {
     try {
       const response = await fetch(
