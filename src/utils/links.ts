@@ -1,3 +1,3 @@
-const API_URL = `https://task4-server-6clx.vercel.app`;
+const API_URL = `https://task4-server-sigma.vercel.app/`;
 
 export default API_URL;
