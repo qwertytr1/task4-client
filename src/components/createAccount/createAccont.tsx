@@ -5,9 +5,7 @@ import '../SignInModal/SignInModal.css';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import dotenv from "dotenv";
-
-dotenv.config();
+import API_URL from '../../utils/links';
 
 function CreateAccountPage() {
   const [username, setUsername] = useState<string>('');
@@ -15,7 +13,6 @@ function CreateAccountPage() {
   const [password, setPassword] = useState<string>('');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const navigate = useNavigate();
-  const API_URL = process.env.REACT_APP_API_BASE_URL;
 
   function register(event: React.FormEvent) {
     event.preventDefault();

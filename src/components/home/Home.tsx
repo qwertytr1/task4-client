@@ -4,9 +4,7 @@ import fetchUsersData from '../../utils/fetchUsers';
 import { User } from '../../utils/interfaces';
 import { useAuth } from '../AuthProvider/AuthProvider';
 import './index.css';
-import dotenv from "dotenv";
-
-dotenv.config();
+import API_URL from '../../utils/links';
 
 const Home: React.FC = () => {
   const [users, setUsers] = useState<User[]>([]);
@@ -17,7 +15,6 @@ const Home: React.FC = () => {
   const { logout } = useAuth();
   const [userToken, setUserToken] = useState<string | null>(null);
   const [dataUser, setDataUser] = useState<User | null>(null);
-  const API_URL = process.env.REACT_APP_API_BASE_URL;
 
   useEffect(() => {
     const token = localStorage.getItem('authToken');

@@ -1,9 +1,6 @@
 import { User } from './interfaces';
-import dotenv from "dotenv";
+import API_URL from './links';
 
-dotenv.config();
-// utils/fetchUsers.ts
-const API_URL = process.env.REACT_APP_API_BASE_URL;
 const fetchUsersData = async (userToken: string) => {
   if (!userToken) {
     throw new Error('User token is required');
