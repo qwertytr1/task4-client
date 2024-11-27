@@ -65,13 +65,14 @@ const Home: React.FC = () => {
   const handleSelectAll = useCallback(() => {
     if (selectAll) {
       setSelectedIds([]);
+      setSelectedUsersData([]);
     } else {
       const allIds = users.map((u) => u.id);
+      const allUsers = users; // Все пользователи
       setSelectedIds(allIds);
+      setSelectedUsersData(allUsers);
     }
-    console.log("Users data:", users);
     setSelectAll(!selectAll);
-    console.log("Selected IDs after select all:", selectedIds);
   }, [selectAll, users]);
 
   useEffect(() => {
