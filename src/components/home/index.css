@@ -22,7 +22,11 @@ body {
   cursor: pointer;
   transition: background-color 0.3s;
 }
-
+button:disabled {
+  background-color: #d1d5db;
+  cursor: not-allowed;
+  color: #6b7280;
+}
 .logout-container button:hover {
   background-color: #b02a37;
 }
