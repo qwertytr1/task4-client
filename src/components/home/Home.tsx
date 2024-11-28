@@ -10,21 +10,16 @@ const Home: React.FC = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
   const [selectAll, setSelectAll] = useState(false);
-  const [selectedUsersData, setSelectedUsersData] = useState<User[]>([]); // Состояние для выбранных пользователей
-  const navigate = useNavigate();
-  const { logout } = useAuth();
   const [userToken, setUserToken] = useState<string | null>(null);
   const [dataUser, setDataUser] = useState<User | null>(null);
+  const navigate = useNavigate();
+  const { logout } = useAuth();
 
   useEffect(() => {
     const token = localStorage.getItem('authToken');
     const userData = localStorage.getItem('userData');
-    if (token) {
-      setUserToken(token);
-    }
-    if (userData) {
-      setDataUser(JSON.parse(userData));
-    }
+    setUserToken(token);
+    if (userData) setDataUser(JSON.parse(userData));
   }, []);
 
   const fetchUsers = useCallback(async () => {
@@ -32,29 +27,21 @@ const Home: React.FC = () => {
 
     try {
       const data = await fetchUsersData(userToken);
-
-      const formattedData = data.map((user: any) => {
-        let lastLogin = 'Never';
-        if (user.lastLogin) {
-          const date = new Date(user.lastLogin);
-          if (!Number.isNaN(date.getTime())) {
-            lastLogin = date.toLocaleString();
-          }
-        }
-
-        return { ...user, lastLogin };
-      });
-
+      const formattedData = data.map((user: User) => ({
+        ...user,
+        lastLogin: user.lastLogin
+          ? new Date(user.lastLogin).toLocaleString()
+          : 'Never',
+      }));
       setUsers(formattedData);
     } catch (error) {
-      console.error(error);
+      console.error('Error fetching users:', error);
     }
   }, [userToken]);
 
   useEffect(() => {
-    if (!userToken) return;
     fetchUsers();
-  }, [userToken]);
+  }, [userToken, fetchUsers]);
 
   const handleLogout = useCallback(() => {
     logout();
@@ -62,229 +49,107 @@ const Home: React.FC = () => {
     navigate('/login');
   }, [logout, navigate]);
 
-  const handleSelectAll = useCallback(() => {
+  const handleSelectAll = () => {
     if (selectAll) {
       setSelectedIds([]);
-      setSelectedUsersData([]);
     } else {
-      const allIds = users.map((u) => u.id);
-      const allUsers = users; // Все пользователи
-      setSelectedIds(allIds);
-      setSelectedUsersData(allUsers);
+      setSelectedIds(users.map((user) => user.id));
     }
     setSelectAll(!selectAll);
-  }, [selectAll, users]);
+  };
 
-  const handleCheckboxChange = useCallback(
-    (id: number) => {
-      const updatedSelectedIds = selectedIds.includes(id)
-        ? selectedIds.filter((userId) => userId !== id)
-        : [...selectedIds, id];
-
-      setSelectedIds(updatedSelectedIds);
-      setSelectAll(updatedSelectedIds.length === users.length);
-
-      const updatedSelectedUsersData = updatedSelectedIds
-        .map((userId) => users.find((user) => user.id === userId))
-        .filter((user): user is User => user !== undefined);
-
-      setSelectedUsersData(updatedSelectedUsersData);
-    },
-    [selectedIds, users],
-  );
-  const handleBlockUsers = useCallback(async () => {
-    const userEmail = dataUser?.email;
-
-    if (!userEmail) {
-      return;
-    }
-
+  const handleCheckboxChange = (id: number) => {
+    setSelectedIds((prev) =>
+      prev.includes(id) ? prev.filter((userId) => userId !== id) : [...prev, id]
+    );
+    setSelectAll(selectedIds.length + 1 === users.length);
+  };
+  const handleAction = async (endpoint: string, updateStatus: "active" | "blocked") => {
     try {
-      const emailsToBlock = selectedUsersData.map((user) => user.email);
-
-      if (emailsToBlock.includes(userEmail)) {
-        const response = await fetch(`${API_URL}/users/block`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${userToken}`,
-          },
-          body: JSON.stringify({ emails: emailsToBlock }),
-        });
-
-        if (!response.ok) {
-          throw new Error('Failed to block users');
-        }
-
-        const result = await response.json();
-        setUsers((prevUsers) =>
-          prevUsers.map((user) =>
-            emailsToBlock.includes(user.email)
-              ? { ...user, status: 'blocked' }
-              : user,
-          ),
-        );
-
-        navigate('/login');
-      } else {
-        const response = await fetch(`${API_URL}/users/block`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${userToken}`,
-          },
-          body: JSON.stringify({ emails: emailsToBlock }),
-        });
-
-        if (!response.ok) {
-          throw new Error('Failed to block users');
-        }
-
-        const result = await response.json();
-
-        setUsers((prevUsers) =>
-          prevUsers.map((user) =>
-            emailsToBlock.includes(user.email)
-              ? { ...user, status: 'blocked' }
-              : user,
-          ),
-        );
-      }
-    } catch (error) {
-      console.error('Error while blocking users:', error);
-    }
-  }, [selectedUsersData, navigate, dataUser, userToken]);
-  const handleUnblockUsers = async () => {
-    try {
-      const response = await fetch(
-        `${API_URL}/users/unblock`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${userToken}`,
-          },
-          body: JSON.stringify({ ids: selectedIds }),
+      const response = await fetch(`${API_URL}/users/${endpoint}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${userToken}`,
         },
-      );
+        body: JSON.stringify({ ids: selectedIds }),
+      });
 
-      if (!response.ok) {
-        throw new Error('Failed to unblock users.');
-      }
+      if (!response.ok) throw new Error(`Failed to ${endpoint} users.`);
 
+      // Update status of affected users
       setUsers((prevUsers) =>
         prevUsers.map((user) =>
-          selectedIds.includes(user.id) ? { ...user, status: 'active' } : user,
-        ),
+          selectedIds.includes(user.id) ? { ...user, status: updateStatus } : user
+        )
       );
-
-      fetchUsers();
+      setSelectedIds([]);
+      setSelectAll(false);
     } catch (error) {
-      alert('Failed to unblock users. Please try again.');
+      console.error(`Error during ${endpoint}:`, error);
     }
   };
 
-  const handleDelete = useCallback(async () => {
-    const userEmail = dataUser?.email;
-    const selectedUsersEmails = selectedIds
-      .map((id) => users.find((user) => user.id === id)?.email)
-      .filter((email): email is string => email !== undefined);
-
-    const isCurrentUserDeleting = selectedUsersEmails.includes(userEmail || '');
-
+  const handleBlockUsers = () => handleAction('block', 'blocked');
+  const handleUnblockUsers = () => handleAction('unblock', 'active');
+  const handleDeleteUsers = async () => {
     try {
-      const response = await fetch(
-        `${API_URL}/users/delete`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${userToken}`,
-          },
-          body: JSON.stringify({ ids: selectedIds }),
+      const response = await fetch(`${API_URL}/users/delete`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${userToken}`,
         },
-      );
+        body: JSON.stringify({ ids: selectedIds }),
+      });
 
-      if (!response.ok) {
-        throw new Error('Failed to delete users.');
-      }
+      if (!response.ok) throw new Error('Failed to delete users.');
 
-      const result = await response.json();
+      // Filter out deleted users from the list
+      setUsers((prevUsers) => prevUsers.filter((user) => !selectedIds.includes(user.id)));
 
-      setUsers(result.users);
       setSelectedIds([]);
       setSelectAll(false);
 
-      if (isCurrentUserDeleting) {
+      if (selectedIds.includes(dataUser?.id || 0)) {
         handleLogout();
       }
     } catch (error) {
-      console.error('Error while deleting users:', error);
+      console.error('Error during deletion:', error);
     }
-  }, [selectedIds, users, dataUser, userToken, handleLogout]);
-
-  const sortUsers = (
-    usersList: User[],
-    criteria: 'lastLogin',
-    ascending = true,
-  ): User[] => {
-    const parseDate = (value: string | null | 'Never'): number => {
-      if (value === 'Never' || value === null) {
-        return 0;
-      }
-      const date = new Date(value);
-      return Number.isNaN(date.getTime()) ? 0 : date.getTime();
-    };
-
-    return [...usersList].sort((a, b) => {
-      const valueA = parseDate(a[criteria]);
-      const valueB = parseDate(b[criteria]);
-
-      if (valueA < valueB) return ascending ? -1 : 1;
-      if (valueA > valueB) return ascending ? 1 : -1;
-      return 0;
-    });
   };
-
-  const sortedUsers = sortUsers(users, 'lastLogin', false);
 
   return (
     <div className="container mt-4">
       <h1>User Table</h1>
-      <div className="logout-container">
-        <button type="button" onClick={handleLogout}>
-          Logout
-        </button>
-      </div>
+      <button type="button" onClick={handleLogout} className="btn btn-secondary mb-3">
+        Logout
+      </button>
       <div className="toolbar mb-4">
-  <button
-    type="button"
-    className="btn btn-primary me-3"
-    onClick={handleBlockUsers}
-    disabled={selectedIds.length === 0}
-  >
-    Block
-  </button>
-  <button
-    type="button"
-    className="btn btn-outline-primary me-3"
-    onClick={handleUnblockUsers}
-    title="Unblock Users"
-    aria-label="Unblock"
-    disabled={selectedIds.length === 0}
-  >
-    <i className="bi bi-unlock" />
-  </button>
-  <button
-    type="button"
-    className="btn btn-outline-danger"
-    onClick={handleDelete}
-    title="Delete Users"
-    aria-label="Delete"
-    disabled={selectedIds.length === 0}
-  >
-    <i className="bi bi-trash" />
-  </button>
+        <button
+          type="button"
+          className="btn btn-primary me-3"
+          onClick={handleBlockUsers}
+          disabled={!selectedIds.length}
+        >
+          Block
+        </button>
+        <button
+          type="button"
+          className="btn btn-outline-primary me-3"
+          onClick={handleUnblockUsers}
+          disabled={!selectedIds.length}
+        >
+          Unblock
+        </button>
+        <button
+          type="button"
+          className="btn btn-danger"
+          onClick={handleDeleteUsers}
+          disabled={!selectedIds.length}
+        >
+          Delete
+        </button>
       </div>
       <table className="table table-striped table-bordered">
         <thead>
@@ -294,7 +159,6 @@ const Home: React.FC = () => {
                 type="checkbox"
                 checked={selectAll}
                 onChange={handleSelectAll}
-                aria-label="Select user with ID"
               />
             </th>
             <th>ID</th>
@@ -305,14 +169,13 @@ const Home: React.FC = () => {
           </tr>
         </thead>
         <tbody>
-          {sortedUsers.map((user) => (
+          {users.map((user) => (
             <tr key={user.id}>
               <td>
                 <input
                   type="checkbox"
                   checked={selectedIds.includes(user.id)}
                   onChange={() => handleCheckboxChange(user.id)}
-                  aria-label={`Select user with ID ${user.id}`}
                 />
               </td>
               <td>{user.id}</td>
