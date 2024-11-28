@@ -12,14 +12,27 @@ function CreateAccountPage() {
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [emailError, setEmailError] = useState<string | null>(null); // For email validation
   const navigate = useNavigate();
+
+  const validateEmail = (email: string): boolean => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; // Simple email regex
+    return emailRegex.test(email);
+  };
 
   function register(event: React.FormEvent) {
     event.preventDefault();
     setErrorMessage(null);
 
+    // Validate email before proceeding
+    if (!validateEmail(email)) {
+      setEmailError('Please enter a valid email address.');
+      return;
+    }
+    setEmailError(null);
+
     axios
-      .post( `${API_URL}/register`, {
+      .post(`${API_URL}/register`, {
         username,
         email,
         password,
@@ -89,19 +102,24 @@ function CreateAccountPage() {
             type="email"
             placeholder="Email"
             className="inputEmailPass"
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-              setEmail(e.target.value)
-            }
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+              setEmail(e.target.value);
+            }}
             value={email}
           />
+          {emailError && (
+            <div className="alert alert-danger" role="alert">
+              {emailError}
+            </div>
+          )}
           <Form.Control
             size="lg"
             type="password"
             placeholder="Password"
             className="inputEmailPass"
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-              setPassword(e.target.value)
-            }
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+              setPassword(e.target.value);
+            }}
             value={password}
           />
           <Button

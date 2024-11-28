@@ -75,9 +75,6 @@ const Home: React.FC = () => {
     setSelectAll(!selectAll);
   }, [selectAll, users]);
 
-  useEffect(() => {
-    console.log("Users data:", users);
-  }, [users]);
   const handleCheckboxChange = useCallback(
     (id: number) => {
       const updatedSelectedIds = selectedIds.includes(id)
