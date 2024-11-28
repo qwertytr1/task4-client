@@ -21,8 +21,7 @@ function App() {
                 <Home />
               </ProtectedRoute>
             }
-          />{' '}
-          .
+          />
         </Routes>
       </BrowserRouter>
     </AuthProvider>
