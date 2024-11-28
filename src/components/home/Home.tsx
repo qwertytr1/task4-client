@@ -117,7 +117,6 @@ const Home: React.FC = () => {
         }
 
         const result = await response.json();
-        alert(result.message);
         setUsers((prevUsers) =>
           prevUsers.map((user) =>
             emailsToBlock.includes(user.email)
@@ -142,7 +141,6 @@ const Home: React.FC = () => {
         }
 
         const result = await response.json();
-        alert(result.message);
 
         setUsers((prevUsers) =>
           prevUsers.map((user) =>
@@ -212,7 +210,6 @@ const Home: React.FC = () => {
       }
 
       const result = await response.json();
-      alert(result.message);
 
       setUsers(result.users);
       setSelectedIds([]);
