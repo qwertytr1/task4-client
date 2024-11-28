@@ -7,24 +7,25 @@ import ProtectedRoute from './components/AuthProvider/ProtectRoute';
 import { AuthProvider } from './components/AuthProvider/AuthProvider';
 
 function App() {
-  return (
-    <AuthProvider>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<SignInModal />} />
-          <Route path="/register" element={<CreateAccountPage />} />
-          <Route path="/login" element={<SignInModal />} />
-          <Route
-            path="/home"
-            element={
-              <ProtectedRoute>
-                <Home />
-              </ProtectedRoute>
-            }
-          />
-        </Routes>
-      </BrowserRouter>
-    </AuthProvider>
+      return (
+        <AuthProvider>
+          <BrowserRouter>
+            <Routes>
+              <Route path="/" element={<SignInModal />} />
+              <Route path="/register" element={<CreateAccountPage />} />
+              <Route path="/login" element={<SignInModal />} />
+
+              <Route
+                path="/home"
+                element={
+                  <ProtectedRoute>
+                    <Home />
+                  </ProtectedRoute>
+                }
+              />
+            </Routes>
+          </BrowserRouter>
+        </AuthProvider>
   );
 }
 
